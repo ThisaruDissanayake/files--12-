@@ -822,6 +822,7 @@
       e.preventDefault();
       document.getElementById('rname').focus();
       return;
+      // scripted form validation should prevent this, but just in case
     }
     if(rsvpForm.action.indexOf('https://script.google.com/macros/s/AKfycbyLFfaXTHlAeip0-5EK20NusqzH9PPd7kHiX2FDUWD4HtRhK-1Z--un7kACBR7AIYl-/exec') !== -1){
       e.preventDefault();
