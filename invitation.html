@@ -323,6 +323,18 @@
   .frame-bloom.br{ bottom:-22px; right:-22px; transform:rotate(180deg); }
   .photo-caption{ margin-top:2rem; font-family:'Mrs Saint Delafield',cursive; font-size:1.9rem; color:var(--gold-1); text-align:center; }
   .photo-sub{ font-style:italic; color:var(--ink-soft); font-size:0.92rem; margin-top:0.3rem; }
+
+  /* ---- story quote card (replaces couple photo) ---- */
+  .story-quote-wrap{ position:relative; max-width:520px; width:100%; margin:1.4rem 0 0.6rem; }
+  .story-quote-card{
+    position:relative; background:#fffdf9; padding:clamp(2.4rem,7vw,3.4rem) clamp(1.8rem,6vw,2.8rem);
+    border:1px solid rgba(184,135,60,0.55);
+    box-shadow:0 22px 48px rgba(43,36,27,0.16);
+    text-align:center;
+  }
+  .story-quote-mark{ font-family:'Mrs Saint Delafield',cursive; font-size:3.2rem; line-height:1; color:var(--gold-3); opacity:0.9; display:block; margin-bottom:0.2rem; }
+  .story-quote-text{ font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500; font-size:clamp(1.15rem,3vw,1.55rem); line-height:1.65; color:var(--ink); }
+  .story-quote-attr{ margin-top:1.3rem; font-family:'Mrs Saint Delafield',cursive; font-size:1.6rem; color:var(--gold-1); }
   @media (max-width:480px){
     .frame-bloom{ width:64px; }
     .frame-bloom.tl{ top:-16px; left:-16px; }
@@ -605,16 +617,16 @@
   <h2 class="sect-title reveal">Our Story</h2>
   <p class="sect-sub reveal">Two hearts, one journey — from a chance meeting to forever</p>
 
-  <div class="photo-frame-wrap reveal">
+  <div class="story-quote-wrap reveal">
     <svg class="frame-bloom tl" viewBox="0 0 100 100"><use href="#fl-maroon" x="0" y="0" width="100" height="100"/></svg>
     <svg class="frame-bloom bl" viewBox="0 0 100 100"><use href="#fl-rose" x="0" y="0" width="100" height="100"/></svg>
     <svg class="frame-bloom br" viewBox="0 0 100 100"><use href="#fl-dahlia" x="0" y="0" width="100" height="100"/></svg>
-    <div class="photo-frame-card">
-      <img src="assets/couple-frame.png" alt="Sarasi &amp; Chirantha" loading="lazy">
+    <div class="story-quote-card">
+      <span class="story-quote-mark">&ldquo;</span>
+      <p class="story-quote-text">In all the world, there is no heart for me like yours, and no love for you like mine. Every love story is beautiful, but ours is my favourite.</p>
+      <div class="story-quote-attr">Sarasi &amp; Chirantha</div>
     </div>
   </div>
-  <div class="photo-caption reveal">Forever begins here</div>
-  <div class="photo-sub reveal">Sarasi &amp; Chirantha</div>
 </section>
 
 <!-- ================= DETAILS: TIME / DATE / LOCATION ================= -->
@@ -692,14 +704,18 @@
   <h2 class="sect-title reveal">RSVP &amp; Best Wishes</h2>
   <p class="sect-sub reveal">Your presence would mean the world to us. Please let us know if you'll be joining, and feel free to leave us your best wishes.</p>
 
-  <form class="rsvp-form reveal" id="rsvpForm">
+  <form class="rsvp-form reveal" id="rsvpForm" action="PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE" method="POST" target="rsvp_iframe">
     <div class="field">
       <label for="rname">Your Name</label>
-      <input type="text" id="rname" placeholder="Full name" required>
+      <input type="text" id="rname" name="Name" placeholder="Full name" required>
+    </div>
+    <div class="field">
+      <label for="remail">Your Email (optional)</label>
+      <input type="email" id="remail" name="Email" placeholder="you@example.com">
     </div>
     <div class="field">
       <label for="rguests">Number of Guests</label>
-      <input type="number" id="rguests" min="1" value="1" required>
+      <input type="number" id="rguests" name="Guests" min="1" value="1" required>
     </div>
     <div class="field">
       <label>Will You Attend?</label>
@@ -707,16 +723,18 @@
         <button type="button" class="sel" data-att="Joyfully Accepts">Joyfully Accepts</button>
         <button type="button" data-att="Regretfully Declines">Regretfully Declines</button>
       </div>
+      <input type="hidden" id="rattend" name="Attendance" value="Joyfully Accepts">
     </div>
     <div class="field">
       <label for="rwish">Your Best Wishes (optional)</label>
-      <textarea id="rwish" placeholder="Leave a message of love for Sarasi &amp; Chirantha"></textarea>
+      <textarea id="rwish" name="Wishes" placeholder="Leave a message of love for Sarasi &amp; Chirantha"></textarea>
     </div>
     <div class="rsvp-actions">
-      <button type="submit" class="btn solid">Send RSVP &amp; Wishes via Email</button>
-      <div class="rsvp-hint">Opens your email app to send to Chirantha &amp; Sarasi</div>
+      <button type="submit" class="btn solid" id="rsvpSubmitBtn">Send RSVP &amp; Wishes</button>
+      <div class="rsvp-hint" id="rsvpHint">Your response is saved and emailed to us automatically</div>
     </div>
   </form>
+  <iframe name="rsvp_iframe" id="rsvp_iframe" style="display:none;" title="RSVP submission"></iframe>
 
   <div class="rsvp-deadline reveal">Kindly respond on or before 14th of August</div>
 </section>
@@ -783,28 +801,49 @@
   tick(); setInterval(tick, 1000);
 
   // RSVP attendance toggle
-  let attendChoice = "Joyfully Accepts";
   document.querySelectorAll('.attend-toggle button').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('.attend-toggle button').forEach(b=>b.classList.remove('sel'));
       btn.classList.add('sel');
-      attendChoice = btn.dataset.att;
+      document.getElementById('rattend').value = btn.dataset.att;
     });
   });
 
-  // RSVP submit -> Email
-  document.getElementById('rsvpForm').addEventListener('submit', (e)=>{
-    e.preventDefault();
+  // RSVP submit -> saved to Google Sheet + emailed automatically via Google Apps Script
+  const rsvpForm = document.getElementById('rsvpForm');
+  const rsvpIframe = document.getElementById('rsvp_iframe');
+  const rsvpHint = document.getElementById('rsvpHint');
+  const rsvpSubmitBtn = document.getElementById('rsvpSubmitBtn');
+  let rsvpSubmitting = false;
+
+  rsvpForm.addEventListener('submit', (e)=>{
     const name = document.getElementById('rname').value.trim();
-    const guests = document.getElementById('rguests').value;
-    const wish = document.getElementById('rwish').value.trim();
-    if(!name){ document.getElementById('rname').focus(); return; }
-    const subject = `RSVP: ${name} — Sarasi & Chirantha's Wedding`;
-    let body = `Hello Sarasi & Chirantha,\n\nThis is ${name}.\nRSVP: ${attendChoice}\nNumber of guests: ${guests}\n`;
-    if(wish){ body += `\nBest wishes:\n${wish}\n`; }
-    body += `\nWith love,\n${name}`;
-    const mailto = `mailto:chiranthackp26390@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
+    if(!name){
+      e.preventDefault();
+      document.getElementById('rname').focus();
+      return;
+    }
+    if(rsvpForm.action.indexOf('PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') !== -1){
+      e.preventDefault();
+      rsvpHint.textContent = 'Setup needed: connect the Google Apps Script URL (see setup notes) to enable RSVP saving & sending.';
+      return;
+    }
+    rsvpSubmitting = true;
+    rsvpSubmitBtn.disabled = true;
+    rsvpSubmitBtn.textContent = 'Sending…';
+  });
+
+  rsvpIframe.addEventListener('load', ()=>{
+    if(!rsvpSubmitting) return;
+    rsvpSubmitting = false;
+    rsvpSubmitBtn.disabled = false;
+    rsvpSubmitBtn.textContent = 'RSVP Sent — Thank You!';
+    rsvpHint.textContent = 'Your response has been recorded. Thank you for letting us know!';
+    rsvpForm.reset();
+    document.querySelectorAll('.attend-toggle button').forEach(b=>b.classList.remove('sel'));
+    document.querySelector('.attend-toggle button[data-att="Joyfully Accepts"]').classList.add('sel');
+    document.getElementById('rattend').value = 'Joyfully Accepts';
+    setTimeout(()=>{ rsvpSubmitBtn.textContent = 'Send RSVP & Wishes'; }, 4000);
   });
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
