@@ -822,9 +822,8 @@
       e.preventDefault();
       document.getElementById('rname').focus();
       return;
-      // scripted form validation should prevent this, but just in case
     }
-    if(rsvpForm.action.indexOf('https://script.google.com/macros/s/AKfycbxvTyycLTC8YdxjOT1d0kdYiIiOvScmHOoHoDee0BSlxWPfbNLZBVU6olJSZv5YOWQH/exec') !== -1){
+    if(rsvpForm.action.indexOf('PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') !== -1){
       e.preventDefault();
       rsvpHint.textContent = 'Setup needed: connect the Google Apps Script URL (see setup notes) to enable RSVP saving & sending.';
       return;
